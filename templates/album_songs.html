@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ album.title }} - Album Songs{% endblock %}
+
+{% block content %}
+<div class="text-white">
+    <!-- Album Image in the top left -->
+    <section class="flex justify-center items-center pt-8">
+        <div class="max-w-4xl w-full bg-gray-900 px-12 py-8 rounded-lg shadow-xl">
+            <div class="flex items-center space-x-6">
+                <img src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-48 object-cover rounded-md">
+                <div class="text-white">
+                    <h2 class="text-3xl font-bold">{{ album.title }}</h2>
+                    <p class="mt-2 text-lg"><span class="mt-1 text-sm text-gray-400">Released Year: </span> {{ album.release_year }}</p>
+                    <div class="mt-1">
+                        <span class="text-sm text-gray-400">Singer: </span>
+                        {% for artist in all_singers %}
+                            <span>{{ artist }}{% if not forloop.last %}, {% endif %}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-1">
+                        <span class="text-sm text-gray-400">Music Director: </span>
+                        {% for artist in album.artist.all %}
+                            <span>{{ artist.name }}{% if not forloop.last %}, {% endif %}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-1">
+                        <span class="text-sm text-gray-400">Total Songs: </span>
+                        <span>{{ songs.count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Song List -->
+    <section class="px-4 py-2">
+        <ul class="mt-2">
+            {% for song in songs %}
+            <li class="flex justify-between items-center py-3 hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded cursor-pointer ps-4" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">
+                <span>{{ forloop.counter }}. {{ song.title }}</span>
+                <audio id="audio-{{ song.id }}" src="{{ song.audio_file.url }}" preload="auto"></audio>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+</div>
+{% endblock %}
