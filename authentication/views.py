@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse_lazy
+from core.models import Profile
 from authentication.forms import RegisterForm, LoginForm, CustomPasswordChangeForm
 
 
@@ -13,6 +14,7 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
+            Profile.objects.create(user=user)
             messages.success(request, f'Registration successful! You are now logged in, Welcome {user.username}.')
             return redirect('home')
         else:
