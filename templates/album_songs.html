@@ -15,7 +15,13 @@
                     <div class="mt-1">
                         <span class="text-sm text-gray-400">Singer: </span>
                         {% for artist in all_singers %}
-                            <span>{{ artist }}{% if not forloop.last %}, {% endif %}</span>
+                            <span>{% if forloop.first %}
+                                {{ artist }}
+                                {% elif not forloop.first and not forloop.last %}
+                                , {{ artist }}
+                                {% elif forloop.last %}& {{ artist }} 
+                                {% endif %}
+                            </span>
                         {% endfor %}
                     </div>
                     <div class="mt-1">
@@ -36,12 +42,62 @@
     <section class="px-4 py-2">
         <ul class="mt-2">
             {% for song in songs %}
-            <li class="flex justify-between items-center py-3 hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded cursor-pointer ps-4" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">
-                <span>{{ forloop.counter }}. {{ song.title }}</span>
+            <li class="flex justify-between items-center py-3 hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded ps-4">
+                <span class="col-5 cursor-pointer" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">{{ forloop.counter }}. {{ song.title }}</span>
                 <audio id="audio-{{ song.id }}" src="{{ song.audio_file.url }}" preload="auto"></audio>
+                <p class="col-5">Artist: <span class="text-sm text-gray-300">{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}</span></p>
+                <p class="text-sm col-1">{{ song.duration }}</p>
+                <button class="text-xl col-1 favorite-btn" 
+                    onclick="toggleFavorite({{ song.id }})" id="favorite-btn-{{ song.id }}">
+                    <i id="favorite-icon-{{ song.id }}" 
+                    class="{% if song in user.profile.favorites.all %}fa-solid fa-heart text-red-500{% else %}fa-regular fa-heart text-gray-300{% endif %}">
+                    </i>
+                </button>
             </li>
             {% endfor %}
         </ul>
-    </section>
+    </section>    
 </div>
+<script>
+    function toggleFavorite(trackId) {
+        fetch(`/toggle-favorite/${trackId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert("Error: " + data.error);
+            } else {
+                const icon = document.getElementById(`favorite-icon-${data.track_id}`);
+                if (data.is_favorite) {
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid', 'text-red-500');
+                } else {
+                    icon.classList.remove('fa-solid', 'text-red-500');
+                    icon.classList.add('fa-regular');
+                }
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }    
+</script>
 {% endblock %}

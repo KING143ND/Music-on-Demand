@@ -1,5 +1,8 @@
 from django.shortcuts import render
-from core.models import MusicDirector, Album, Track, Playlist, Singer
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from core.models import MusicDirector, Album, Track, Playlist, Singer, Profile
 from authentication.forms import LoginForm, RegisterForm, CustomPasswordChangeForm
 
 
@@ -45,3 +48,20 @@ def music_director_details(request, slug):
         'albums': albums,
         'songs': songs
     })
+    
+
+@csrf_exempt    
+def toggle_favorite(request, track_id):
+    if request.user.is_authenticated:
+        profile = Profile.objects.get(user=request.user)
+        track = get_object_or_404(Track, id=track_id)
+        print(profile)
+        print(track)
+        if track in profile.favorites.all():
+            profile.favorites.remove(track)
+            is_favorite = False
+        else:
+            profile.favorites.add(track)
+            is_favorite = True
+        return JsonResponse({'is_favorite': is_favorite, 'track_id': track_id})
+    return JsonResponse({'error': 'Unauthorized'}, status=401)
