@@ -1,16 +1,14 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}Music On Demand{% endblock %}
+<title hx-head="title">Music On Demand</title>
 
 {% block content %}
-<div class="mx-4 text-white">
+<div class="mx-4 text-white pt-4" id="index">
     <!-- Albums Section -->
     <section class="my-8">
         <h2 class="text-2xl font-bold mb-4 text-center">Albums</h2>
         <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {% for album in albums %}
-            <a href="{% url 'album_details' album.slug %}">
-            <div class="bg-gray-900 rounded overflow-hidden">
+            <a href="{% url 'album_details' album.slug %}" hx-get="{% url 'album_details' album.slug %}" hx-target="#main-content" hx-push-url="true">
+            <div class="bg-gray-900 rounded overflow-hidden album-card">
                 <img src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-full object-cover rounded-md">
                 <div class="px-2 pt-2 pb-4">
                     <h3 class="font-bold text-lg">{{ album.title }}</h3>
@@ -26,15 +24,12 @@
             {% endfor %}
         </div>
     </section>
-    <div id="songs-container">
-        <!-- Songs will be injected here -->
-    </div>
     <!-- Songs Section -->
     <section class="my-8 pt-4">
         <h2 class="text-2xl font-bold mb-4 text-center">Songs</h2>
         <div class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {% for song in songs %}
-            <div class="mb-4 cursor-pointer" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">
+            <div class="mb-4 cursor-pointer song-card" onclick="setFooterPlayer('{{ song.id }}', '{{ song.title }}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}', `{% for artist in song.artist.all %}{{ artist.name }}{% if not forloop.last %}, {% endif %}{% endfor %}`)">
                 <div class="card bg-gray-900 rounded-md">
                     <img src="{{ song.album.image.url }}" class="card-img-top rounded-md" alt="{{ song.title }}">
                     <div class="card-body bg-gray-900 rounded-md">
@@ -79,55 +74,4 @@
         </div>
     </section>
 </div>
-
-<!-- JavaScript for Handling Song Clicks and Playing Songs -->
-{% comment %} <script>
-    function playSong(title, artist, artSrc, audioSrc) {
-        // Update the audio player with the selected song's details
-        document.getElementById('song-title').innerText = title;
-        document.getElementById('artist-name').innerText = artist;
-        document.getElementById('album-art').src = artSrc;
-        document.getElementById('audio-player').src = audioSrc;
-        const audioPlayer = document.getElementById('audio-player');
-        audioPlayer.play();
-
-        // Save the song state in local storage
-        saveSongState(true, title, artist, artSrc, audioSrc);
-    }
-
-    function saveSongState(isPlaying, title, artist, artSrc, audioSrc) {
-        const songState = {
-            title: title,
-            artist: artist,
-            art: artSrc,
-            audioSrc: audioSrc,
-            isPlaying: isPlaying,
-        };
-        localStorage.setItem('songState', JSON.stringify(songState));
-    }
-
-    // When the page loads, restore the previous song state
-    window.addEventListener('load', () => {
-        const songState = JSON.parse(localStorage.getItem('songState'));
-        if (songState) {
-            const songTitle = document.getElementById('song-title');
-            const songArtist = document.getElementById('artist-name');
-            const songArt = document.getElementById('album-art');
-            const audioElement = document.getElementById('audio-player');
-            const playPauseIcon = document.getElementById('play-pause-icon');
-
-            songTitle.textContent = songState.title;
-            songArtist.textContent = songState.artist;
-            songArt.src = songState.art;
-            audioElement.src = songState.audioSrc;
-
-            /*if (songState.isPlaying) {
-                audioElement.play();
-                playPauseIcon.classList.remove('bi-play-circle-fill');
-                playPauseIcon.classList.add('bi-pause-circle-fill');
-            }*/
-        }
-    });
-</script> {% endcomment %}
-
 {% endblock %}

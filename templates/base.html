@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Music On Demand{% endblock %}</title>
+    <title>{% block title %}{{title|default:"Music On Demand"}}{% endblock %}</title>
     <!-- Project CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <!-- Bootstrap CSS CDN -->
@@ -15,33 +15,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="..." crossorigin="anonymous"/>
 	<script src="https://kit.fontawesome.com/fc1e235b2e.js"></script>
     <!-- HTMX CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/htmx/2.0.4/htmx.min.js" integrity="sha512-2kIcAizYXhIn8TzUvqzEDZNuDZ+aW7yE/+f1HJHXFjQcGNfv1kqzJSTBRBSlOgp6B/KZsz1K0a3ZTqP9dnxioQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/wavesurfer.js"></script>
-    {% comment %} <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> {% endcomment %}
-    {% comment %} <script src="sweetalert2.min.js"></script> {% endcomment %}
-    {% comment %} <link rel="stylesheet" href="sweetalert2.min.css"> {% endcomment %}
-    <style>
-        .waveform {
-            width: 100%;
-            height: 100px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-        }
-        .controls {
-            margin-bottom: 30px;
-        }
-        .sweet_alert {
-            border: 4px solid rgb(0, 0, 0);
-            border-radius: 15px;
-        }
-        .text-error {
-            color:#dc3545;
-        }
-    </style>
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/head-support.js"></script>
+    <script src="https://unpkg.com/wavesurfer.js"></script>    </style>
 </head>
 <body class="bg-gray-800">
     <!-- Navbar -->
-    {% comment %} <nav class="navbar bg-gradient-to-r from-purple-500 from-25% via-fuchsia-400 via-40% to-pink-500 to-80% fixed-top"> {% endcomment %}
     <nav class="navbar py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 fixed-top">
         <div class="container-fluid">
             <div class="d-flex align-items-center">
@@ -50,7 +29,7 @@
                   <span class="navbar-toggler-icon"></span>
               </button>
               <!-- Brand -->
-              <a class="navbar-brand text-white ms-4" href="{% url 'home' %}">Music On Demand</a>
+              <a class="navbar-brand text-white ms-4" href="{% url 'home' %}" hx-get="/" hx-target="#main-content" hx-push-url="true" hx-boost="true">Music On Demand</a>
             </div>
             <form class="d-flex align-items-center w-1/2" role="search">
                 <input class="form-control me-2 rounded-full" type="search" placeholder="Search" aria-label="Search">
@@ -183,33 +162,25 @@
     </div>
 
     <!-- Main Content -->
-    <div id="main-content" class="px-2 py-4 mt-5">
-        {% block content %}{% endblock %}
-    </div>
+    <main 
+        id="main-content" 
+        hx-get="{{ request.path }}"
+        hx-trigger="load, popstate"
+        hx-target="#main-content"
+        hx-swap="innerHTML" 
+        class="px-2 mt-5">
+        {% if partial %}
+            {% include partial %}
+        {% else %}
+            {% block content %}{% endblock %}
+        {% endif %}
+    </main>
 
-    <!-- Fixed Audio Player (Bottom) -->
-    {% comment %} <div class="footer-player" id="footer-player">
-        <div class="footer-left">
-            <img id="footer-image" src="default-image.jpg" alt="Track Image" />
-        </div>
-        <div class="footer-details">
-            <h4 id="footer-title">No Track Playing</h4>
-            <div id="footer-artist">Artist Name(s)</div>
-            <div id="footer-album">Album Name</div>
-            <div id="footer-time">00:00 / 00:00</div>
-        </div>
-        <div class="seek-container">
-            <input type="range" id="footer-seek" value="0" max="100" step="0.1" oninput="seekFooterTrack(this.value)" />
-        </div>
-        <div class="controls">
-            <button id="footer-play" onclick="toggleFooterPlay()">Play</button>
-            <button onclick="stopFooterPlayer()">Stop</button>
-        </div>
-    </div> {% endcomment %}
     <div class="player bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" id="player">
         <!-- Seekbar and Time -->
         <div class="player-seekbar">
             <span id="current-time">00:00</span>
+            <div id="waveform" class="d-none"></div>
             <input type="range" id="seekbar" value="0" max="100" step="0.1" oninput="seekTrack(this.value)" />
             <span id="total-time">00:00</span>
         </div>
@@ -242,289 +213,26 @@
             </div>
         </div>
     </div>
-    <!-- Bottom Audio Player -->
-    {% comment %} <footer class="fixed-bottom bg-dark text-white py-2">
-      <div class="container d-flex align-items-center justify-content-between">
-          <div class="d-flex align-items-center">
-              <img id="album-art" src="" alt="Album Art" class="rounded me-3" style="height: 50px; width: 50px; object-fit: cover;">
-              <div>
-                  <h6 class="mb-0" id="song-title">Song Title</h6>
-                  <small id="artist-name">Artist Name</small>
-              </div>
-          </div>
-          <audio id="audio-player" controls="" preload="none" class="w-50">
-              <source src="" type="audio/mpeg">
-              Your browser does not support the audio element.
-          </audio>
-      </div>
-  </footer> {% endcomment %}
-
-  {% comment %} <script>
-    import WaveSurfer from 'https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.esm.js'
-
-const wavesurfer = WaveSurfer.create({
-  container: '#waveform',
-  waveColor: '#4F4A85',
-  progressColor: '#383351',
-  url: '{% static 'music.mp3' %}',
-})
-
-wavesurfer.on('interaction', () => {
-  wavesurfer.play()
-})
-</script> {% endcomment %}
+    
     <!-- Bootstrap JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/wavesurfer.js"></script>
     <script src="{% static 'js/script.js' %}"></script>
-
-
-    <!-- JavaScript for Managing Audio Player State -->
-    {% comment %} <script>
-      const audioPlayer = document.getElementById('audio-player');
-      const audioElement = document.getElementById('audio-element');
-      const playPauseBtn = document.getElementById('play-pause-btn');
-      const playPauseIcon = document.getElementById('play-pause-icon');
-      const songTitle = document.getElementById('song-title');
-      const songArtist = document.getElementById('song-artist');
-      const songArt = document.getElementById('song-art');
-
-      // Check if a song is already playing on page load
-      window.addEventListener('load', () => {
-          const songState = JSON.parse(localStorage.getItem('songState'));
-          if (songState) {
-              songTitle.textContent = songState.title;
-              songArtist.textContent = songState.artist;
-              songArt.src = songState.art;
-              audioElement.src = songState.audioSrc;
-              if (songState.isPlaying) {
-                  audioElement.play();
-                  playPauseIcon.classList.remove('bi-play-circle-fill');
-                  playPauseIcon.classList.add('bi-pause-circle-fill');
-              }
-          }
-      });
-
-      // Play/Pause functionality
-      playPauseBtn.addEventListener('click', () => {
-          if (audioElement.paused) {
-              audioElement.play();
-              playPauseIcon.classList.remove('bi-play-circle-fill');
-              playPauseIcon.classList.add('bi-pause-circle-fill');
-              saveSongState(true);
-          } else {
-              audioElement.pause();
-              playPauseIcon.classList.remove('bi-pause-circle-fill');
-              playPauseIcon.classList.add('bi-play-circle-fill');
-              saveSongState(false);
-          }
-      });
-
-      // Save song state to localStorage
-      function saveSongState(isPlaying) {
-          const songState = {
-              title: songTitle.textContent,
-              artist: songArtist.textContent,
-              art: songArt.src,
-              audioSrc: audioElement.src,
-              isPlaying: isPlaying,
-          };
-          localStorage.setItem('songState', JSON.stringify(songState));
-      }
-    </script> {% endcomment %}
-    {% comment %} <script>
-      const audioPlayer = document.getElementById('audio-player');
-      const seekBar = document.getElementById('seek-bar');
-      const currentTime = document.getElementById('current-time');
-  
-      // Update the seek bar and time when the audio plays
-      audioPlayer.addEventListener('timeupdate', function () {
-          const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-          seekBar.value = progress;
-  
-          // Format the current time
-          const minutes = Math.floor(audioPlayer.currentTime / 60);
-          const seconds = Math.floor(audioPlayer.currentTime % 60);
-          currentTime.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-      });
-  
-      // Update audio position when seek bar is dragged
-      seekBar.addEventListener('input', function () {
-          const seekPosition = (seekBar.value / 100) * audioPlayer.duration;
-          audioPlayer.currentTime = seekPosition;
-      });
-  </script>
-  
+    
     <script>
-      function playSong(title, artist, albumImage, audioUrl) {
-        const audioPlayer = document.getElementById('audio-player');
-        const seekbar = document.getElementById('seekbar');
-    
-        // Update the audio source
-        audioPlayer.src = audioUrl;
-    
-        // Load and play the audio
-        audioPlayer.load();
-        audioPlayer.play();
-    
-        // Set up the seekbar functionality
-        audioPlayer.addEventListener('timeupdate', () => {
-          if (audioPlayer.duration > 0) {
-            seekbar.value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-          }
+        window.addEventListener("popstate", function(event) {
+            if (event.state && event.state.url) {
+                fetch(event.state.url, {
+                    headers: { 'HX-Request': 'true' }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector("#main-content").innerHTML = html;
+                })
+                .catch(err => console.error("Failed to load:", err));
+            }
         });
-    
-        // Update the seekbar when user interacts with it
-        seekbar.addEventListener('input', () => {
-          const seekTime = (seekbar.value / 100) * audioPlayer.duration;
-          audioPlayer.currentTime = seekTime;
-        });
-    
-        // Show the song info dynamically (optional)
-        document.getElementById('song-title').textContent = title;
-        document.getElementById('song-artist').textContent = artist;
-        document.getElementById('song-album').src = albumImage;
-      }
     </script>
-    
-    <script>
-      const audioPlayer = document.getElementById('audio-player');
-      const seekbar = document.getElementById('seekbar');
-
-      let isSeeking = false;  // This will track whether the user is dragging the seekbar
-
-      // Update seekbar while audio is playing
-      audioPlayer.addEventListener('timeupdate', () => {
-          if (!isSeeking) {  // Update the seekbar only if not actively seeking
-              const value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-              seekbar.value = value;
-          }
-      });
-
-      // Update audio currentTime when user interacts with seekbar
-      seekbar.addEventListener('input', () => {
-          isSeeking = true;  // Mark that the user is interacting with the seekbar
-          const newTime = (seekbar.value / 100) * audioPlayer.duration;
-          audioPlayer.currentTime = newTime;
-      });
-
-      // Reset 'isSeeking' when the user stops interacting with the seekbar
-      seekbar.addEventListener('change', () => {
-          isSeeking = false;
-      });
-
-      // Update seekbar max when audio metadata is loaded
-      audioPlayer.addEventListener('loadedmetadata', () => {
-          seekbar.max = audioPlayer.duration;
-      });
-
-      // Function to play a song
-      function playSong(title, artists, albumArtUrl, audioFileUrl) {
-          document.getElementById('song-title').innerText = title;
-          document.getElementById('artist-name').innerText = artists;
-          document.getElementById('album-art').src = albumArtUrl;
-          audioPlayer.src = audioFileUrl;
-
-          // Play the song
-          audioPlayer.play();
-
-          // Reset the seekbar when a new song is loaded
-          seekbar.value = 0;
-      }
-  </script> {% endcomment %}
-  {% comment %} <script>
-    const audioPlayer = document.getElementById('audio-player');
-    const audioSource = document.getElementById('audio-source');
-
-    // Function to load and play the audio
-    function playSong(title, audioFileUrl) {
-        // Check if the audio file is in localStorage
-        let audioData = localStorage.getItem(audioFileUrl);
-
-        if (!audioData) {
-            // If the audio is not in localStorage, fetch it and store it
-            fetchAudioAndPlay(audioFileUrl);
-        } else {
-            // If the audio is in localStorage, play it directly
-            audioSource.src = audioFileUrl;
-            audioPlayer.load();
-            audioPlayer.play();
-        }
-    }
-
-    // Function to fetch the audio and store it in localStorage
-    function fetchAudioAndPlay(audioFileUrl) {
-      const dbName = "audioFilesDB";
-      const dbVersion = 1;
-      const storeName = "audioFilesStore";
-  
-      // Open IndexedDB
-      const request = indexedDB.open(dbName, dbVersion);
-  
-      request.onupgradeneeded = function (event) {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains(storeName)) {
-              db.createObjectStore(storeName);
-          }
-      };
-  
-      request.onerror = function (event) {
-          console.error("Error opening IndexedDB:", event);
-      };
-  
-      request.onsuccess = function (event) {
-          const db = event.target.result;
-          const transaction = db.transaction(storeName, "readwrite");  // Make sure it's readwrite
-          const store = transaction.objectStore(storeName);
-  
-          // Check if the audio is already stored in IndexedDB
-          const audioData = store.get(audioFileUrl);
-  
-          audioData.onsuccess = function () {
-              if (audioData.result) {
-                  // If audio is found, play it directly
-                  audioSource.src = audioData.result;
-                  audioPlayer.load();
-                  audioPlayer.play();
-              } else {
-                  // If audio is not found, fetch and store it
-                  fetch(audioFileUrl)
-                      .then(response => response.blob())
-                      .then(blob => {
-                          const reader = new FileReader();
-                          reader.onloadend = function () {
-                              const audioBase64 = reader.result;
-  
-                              // Store the audio data in IndexedDB within the active transaction
-                              const putRequest = store.put(audioBase64, audioFileUrl);
-  
-                              putRequest.onsuccess = function () {
-                                  // Play the audio after storing it
-                                  audioSource.src = audioBase64;
-                                  audioPlayer.load();
-                                  audioPlayer.play();
-                              };
-  
-                              putRequest.onerror = function (event) {
-                                  console.error("Error storing audio in IndexedDB:", event);
-                              };
-                          };
-  
-                          reader.readAsDataURL(blob); // Convert Blob to Base64
-                      })
-                      .catch(error => console.error('Error fetching audio file:', error));
-              }
-          };
-  
-          transaction.oncomplete = function () {
-              // Make sure the transaction is completed properly
-              db.close();
-          };
-      };
-  }
-   {% endcomment %}
-  
-</script>
 
 </body>
 </html>

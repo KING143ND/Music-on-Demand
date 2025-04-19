@@ -30,10 +30,12 @@ def register(request):
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
+        print(form)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
+            print(user)
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')

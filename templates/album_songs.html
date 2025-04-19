@@ -1,28 +1,18 @@
-{% extends "base.html" %}
-{% load static %}
-{% block title %}{{ album.title }} - Album Songs{% endblock %}
+<title hx-head="title">{{ album.title }} - Album Songs</title>
 
 {% block content %}
-<div class="text-white">
+<div class="text-white pt-2" id="album-songs">
     <!-- Album Image in the top left -->
     <section class="flex justify-center items-center pt-8">
         <div class="max-w-4xl w-full bg-gray-900 px-12 py-8 rounded-lg shadow-xl">
             <div class="flex items-center space-x-6">
-                <img src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-48 object-cover rounded-md">
+                <img id="album-image" src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-48 object-cover rounded-md">
                 <div class="text-white">
-                    <h2 class="text-3xl font-bold">{{ album.title }}</h2>
-                    <p class="mt-2 text-lg"><span class="mt-1 text-sm text-gray-400">Released Year: </span> {{ album.release_year }}</p>
+                    <h2 id="album-title" class="text-3xl font-bold">{{ album.title }}</h2>
+                    <p id="release-year" class="mt-2 text-lg"><span class="mt-1 text-sm text-gray-400">Released Year: </span> {{ album.release_year }}</p>
                     <div class="mt-1">
                         <span class="text-sm text-gray-400">Singer: </span>
-                        {% for artist in all_singers %}
-                            <span>{% if forloop.first %}
-                                {{ artist }}
-                                {% elif not forloop.first and not forloop.last %}
-                                , {{ artist }}
-                                {% elif forloop.last %}& {{ artist }} 
-                                {% endif %}
-                            </span>
-                        {% endfor %}
+                        <span id="singers">{% for artist in all_singers %}{{ artist }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>
                     </div>
                     <div class="mt-1">
                         <span class="text-sm text-gray-400">Music Director: </span>
@@ -32,7 +22,7 @@
                     </div>
                     <div class="mt-1">
                         <span class="text-sm text-gray-400">Total Songs: </span>
-                        <span>{{ songs.count }}</span>
+                        <span id="total-songs">{{ songs.count }}</span>
                     </div>
                 </div>
             </div>
@@ -40,25 +30,65 @@
     </section>
     <!-- Song List -->
     <section class="px-4 py-2">
-        <ul class="mt-2">
+        <ul id="song-list" class="mt-2">
             {% for song in songs %}
-            <li class="flex justify-between items-center py-3 hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded ps-4">
-                <span class="col-5 cursor-pointer" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">{{ forloop.counter }}. {{ song.title }}</span>
-                <audio id="audio-{{ song.id }}" src="{{ song.audio_file.url }}" preload="auto"></audio>
-                <p class="col-5">Artist: <span class="text-sm text-gray-300">{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}</span></p>
-                <p class="text-sm col-1">{{ song.duration }}</p>
-                <button class="text-xl col-1 favorite-btn" 
-                    onclick="toggleFavorite({{ song.id }})" id="favorite-btn-{{ song.id }}">
-                    <i id="favorite-icon-{{ song.id }}" 
-                    class="{% if song in user.profile.favorites.all %}fa-solid fa-heart text-red-500{% else %}fa-regular fa-heart text-gray-300{% endif %}">
-                    </i>
-                </button>
-            </li>
+                <li class="song-item flex justify-between items-center py-3 hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded ps-4">
+                    <span class="col-5 cursor-pointer" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">{{ forloop.counter }}. {{ song.title }}</span>
+                    <audio id="audio-{{ song.id }}" src="{{ song.audio_file.url }}" preload="auto"></audio>
+                    <p class="col-5">Artist: <span class="text-sm text-gray-300">{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}</span></p>
+                    <p class="text-sm col-1">{{ song.duration }}</p>
+                    <button class="text-xl col-1 favorite-btn" onclick="toggleFavorite({{ song.id }})" id="favorite-btn-{{ song.id }}">
+                        <i id="favorite-icon-{{ song.id }}" class="{% if song in user.profile.favorites.all %}fa-solid fa-heart text-red-500{% else %}fa-regular fa-heart text-gray-300{% endif %}"></i>
+                    </button>
+                </li>
             {% endfor %}
         </ul>
-    </section>    
+    </section>
 </div>
+
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetchAlbumDetails();
+    });
+
+    function fetchAlbumDetails() {
+        const slug = window.location.pathname.split('/').pop();
+        
+        fetch(`/album/${slug}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.album) {
+                // Populate the album details
+                document.getElementById('album-title').textContent = data.album.title;
+                document.getElementById('album-image').src = data.album.image;
+                document.getElementById('release-year').textContent = `Released Year: ${data.album.release_year}`;
+                document.getElementById('singers').textContent = data.album.singers.join(', ');
+                document.getElementById('total-songs').textContent = data.album.total_songs;
+
+                // Add songs dynamically
+                const songList = document.getElementById('song-list');
+                songList.innerHTML = '';  // Clear existing songs
+                data.songs.forEach(song => {
+                    const songItem = document.createElement('li');
+                    songItem.classList.add('song-item');
+                    songItem.innerHTML = `
+                        <span onclick="setFooterPlayer(${song.id}, '${song.title}', '${song.artists.join(', ')}', '${song.album_title}', '${song.album_image}', '${song.audio_file}')">${song.title}</span>
+                        <audio id="audio-${song.id}" src="${song.audio_file}" preload="auto"></audio>
+                        <p>Artist: ${song.artists.join(', ')}</p>
+                        <p>${song.duration}</p>
+                    `;
+                    songList.appendChild(songItem);
+                });
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
     function toggleFavorite(trackId) {
         fetch(`/toggle-favorite/${trackId}/`, {
             method: 'POST',
@@ -98,6 +128,6 @@
             }
         }
         return cookieValue;
-    }    
+    }
 </script>
 {% endblock %}
