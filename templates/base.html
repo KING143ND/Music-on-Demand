@@ -176,41 +176,63 @@
         {% endif %}
     </main>
 
-    <div class="player bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" id="player">
-        <!-- Seekbar and Time -->
-        <div class="player-seekbar">
-            <span id="current-time">00:00</span>
-            <div id="waveform" class="d-none"></div>
-            <input type="range" id="seekbar" value="0" max="100" step="0.1" oninput="seekTrack(this.value)" />
-            <span id="total-time">00:00</span>
-        </div>
-
-        <!-- Player Details -->
-        <div class="player-details">
-            <!-- Left: Image and Song Info -->
-            <div class="player-left mb-1">
-                <img id="player-image" src="{% static 'default-image.jpg' %}" alt="Track Image" />
-                <div class="song-info">
-                    <h4 class="text-lg" id="player-title">No Track Playing</h4>
-                    <p>
-                    <span id="player-artist">Artist Name(s)</span>  • 
-                    <span id="player-album">Album Name</span>
-                    </p>
+    <div class="player bg-gray-900 text-white px-2 py-2 fixed bottom-0 left-0 right-0 z-50">
+        <div class="flex items-center justify-between">
+            <!-- Left: Song Info -->
+            <div class="flex items-center gap-2 w-3/12">
+                <img
+                id="player-image"
+                src="{% static 'default-image.jpg' %}"
+                alt="Track Image"
+                class="w-14 h-14 rounded-md object-cover"
+                />
+                <div class="flex flex-col">
+                <span id="player-title" class="font-semibold text-sm">No Track Playing</span>
+                <span id="player-album" class="text-xs text-gray-300">Album Name</span>
+                <span id="player-artist" class="text-xs text-gray-400">Artist Name(s)</span>
                 </div>
             </div>
-
-            <!-- Center: Controls -->
-            <div class="player-controls">
-                <button onclick="prevTrack()">⏮</button>
-                <button id="play-pause" onclick="togglePlay()">▶</button>
-                <button onclick="nextTrack()">⏭</button>
+            <!-- Center: Controls + Seekbar -->
+            <div class="flex flex-col items-center gap-1 w-7/12">
+                <!-- Controls -->
+                <div class="flex gap-6 text-2xl items-center">
+                <button onclick="prevTrack()" class="hover:scale-110 transition">⏮</button>
+                <button id="play-pause" onclick="togglePlay()" class="text-3xl hover:scale-110 transition">▶</button>
+                <button onclick="nextTrack()" class="hover:scale-110 transition">⏭</button>
             </div>
-
-            <!-- Right: Volume and Options -->
-            <div class="player-right">
-                <input type="range" id="volume" value="50" max="100" oninput="setVolume(this.value)" />
-                <button onclick="toggleOptions()">⚙</button>
+            <!-- Seekbar and Time (only in center) -->
+            <div class="flex items-center gap-2 mt-1 w-full">
+                <span id="current-time" class="text-xs w-10 text-right">00:00</span>
+                <input
+                    type="range"
+                    id="seekbar"
+                    value="0"
+                    max="100"
+                    step="0.1"
+                    oninput="seekTrack(this.value)"
+                    class="w-full h-1 rounded-full appearance-none cursor-pointer"
+                />
+                <span id="total-time" class="text-xs w-10">00:00</span>
             </div>
+        </div>
+        <!-- Right: Volume & Settings -->
+        <div class="flex items-center justify-end gap-1 w-2/12">
+            <button id="mute-btn" onclick="toggleMute()">
+              <i class="fa-solid fa-volume-high text-lg"></i>
+            </button>
+            <input
+              type="range"
+              id="volume"
+              min="0"
+              max="100"
+              value="50"
+              oninput="setVolume(this.value)"
+              class="h-1 w-20 bg-gray-600 rounded-full accent-green-500 appearance-none"
+            />
+            <button onclick="toggleOptions()">
+              <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+          </div>
         </div>
     </div>
     

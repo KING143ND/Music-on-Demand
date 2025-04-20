@@ -35,7 +35,6 @@ def login_view(request):
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
-            print(user)
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Welcome back, {user.username}!')

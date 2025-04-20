@@ -111,6 +111,7 @@ def play_song(request):
 
         response_data = {
             'success': True,
+            'song_id': song.id,
             'song_title': song.title,
             'artist': ', '.join([artist.name for artist in song.artist.all()]),
             'album_title': song.album.title,
