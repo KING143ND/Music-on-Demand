@@ -13,17 +13,36 @@ def register(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            if user.email and Profile.objects.filter(email=user.email).exists():
+                messages.error(request, "Email has been already taken!😔")
+                return redirect('home')
+            profile_name = form.cleaned_data.get('profile_name')
+            name_parts = str(profile_name).strip().split()
+            first_name = name_parts[0]
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+            user.first_name = first_name
+            user.last_name = last_name
+            user.username = profile_name
+            user.save()
+            Profile.objects.create(
+                user=user,
+                email=user.email,
+                first_name=first_name,
+                last_name=last_name
+            )
             login(request, user)
-            Profile.objects.create(user=user)
             messages.success(request, f'Registration successful! You are now logged in, Welcome {user.username}.')
             return redirect('home')
         else:
+            request.session['show_register_modal'] = True
             for field in form:
                 if field.errors:
                     for error in field.errors:
                         messages.error(request, f"Registration failed. {error}")
-    else:
-        form = RegisterForm()
+            response = render(request, 'base.html', {'register_form': form})
+            request.session.pop('show_register_modal', None)
+
+            return response
     return redirect('home')
 
 

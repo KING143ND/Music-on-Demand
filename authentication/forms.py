@@ -2,20 +2,20 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.utils.translation import gettext_lazy as _
+import re
+from django.core.exceptions import ValidationError
 
 
 class RegisterForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2']
-        
-    username = forms.CharField(
+    profile_name = forms.CharField(
+        max_length=100,
+        required=True,
         widget=forms.TextInput(attrs={
             'class': 'input-field',
-            'placeholder': 'Username',
-            'autocomplete': 'off'
+            'placeholder': 'Full Name (e.g. Rohit Sharma)',
         })
     )
+
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
             'class': 'input-field',
@@ -35,6 +35,16 @@ class RegisterForm(UserCreationForm):
             'placeholder': 'Confirm Password'
         })
     )
+
+    class Meta:
+        model = User
+        fields = ['profile_name', 'email', 'password1', 'password2']
+
+    def clean_profile_name(self):
+        name = self.cleaned_data.get('profile_name')
+        if not re.match(r'^[A-Za-z ]+$', name):
+            raise forms.ValidationError("Profile name can only contain letters and spaces.")
+        return name
 
 
 class LoginForm(AuthenticationForm):

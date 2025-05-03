@@ -58,11 +58,11 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm dropdown-menu-dark">
                         {% if user.is_authenticated %}
-                            <li><h6 class="dropdown-header">{{ user.profile.first_name|title }} {{ user.profile.last_name|title }}</h6></li>
-                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            <li><h6 class="dropdown-header fs-6 text-white"><i class="fa-solid fa-user"></i> {{ user.profile.first_name|title }} {% if user.profile.last_name %}{{ user.profile.last_name|title }}{% endif %}</h6></li>
+                            <li><a class="dropdown-item cursor-pointer" href="{% url 'logout' %}">Logout</a></li>
                         {% else %}
-                            <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a></li>
-                            <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</a></li>
+                            <li><a class="dropdown-item cursor-pointer" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a></li>
+                            <li><a class="dropdown-item cursor-pointer" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</a></li>
                         {% endif %}
                     </ul>
                 </div>
@@ -88,25 +88,24 @@
     </div>
     </div>
 
-    <!-- Messages -->
-    {% for message in messages %}
-    <script>
-        const swalWithBootstrapButtons = Swal.mixin({
-            customClass: {
-                confirmButton: "px-4 py-2 btn-primary border border-0",
-                popup: "sweet_alert aler-{{ message.tags }}",
-                title: "fw-normal p-0 text-{{ message.tags }} text-capitalize",
-            },
-            buttonsStyling: false
-        });
-        swalWithBootstrapButtons.fire({
-            title: '{{ message.tags }}',
-            html: '<span class="fs-1 m-0 ext-{{message.tags}}">{{ message }}</span>',
-            icon: '{{ message.tags }}',
-            confirmButtonText: 'OK', 
-        });
-    </script>    
-    {% endfor %}
+    <!-- Message Alert -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast text-white {% if message.tags == 'success' %}bg-success{% elif message.tags == 'error' %}bg-danger{% elif message.tags == 'warning' %}bg-warning{% elif message.tags == 'info' %}bg-info{% else %}{% endif %} border-0 shadow my-toast mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex align-items-center">
+                        <div class="toast-body w-100">
+                            {{ message }}
+                            <div class="toast-timer mt-2">
+                                <div class="timer-bar"></div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
 
     <!-- Login Modal -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
@@ -117,7 +116,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="loginForm" method="post" action="{% url 'login' %}">
+                    <form id="loginForm" method="post" action="{% url 'login' %}" autocomplete="off">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="username" class="form-label text-white">Username</label>
@@ -127,7 +126,18 @@
                             <label for="password" class="form-label text-white">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <button type="submit" class="btn btn-outline-light mt-3">Login</button>
+                        <div class="mb-3 d-flex justify-content-between w-100 align-items-center">
+                            <!-- Left side -->
+                            <div>
+                                <button type="submit" class="btn btn-outline-light mt-1 me-2">Login</button>
+                            </div>
+                        
+                            <!-- Right side -->
+                            <div class="d-flex align-items-center">
+                                <p class="mb-0 me-2 text-white">Don't have an account?</p>
+                                <button type="button" class="btn btn-outline-light mt-1" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                            </div>
+                        </div>                        
                     </form>
                 </div>
             </div>
@@ -140,18 +150,18 @@
             <div class="modal-content bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
                 <div class="modal-header">
                     <h5 class="modal-title" id="registerModalLabel">Register</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="registerModalCloseBtn"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="registerForm" method="post" action="{% url 'register' %}">
+                    <form id="registerForm" method="post" action="{% url 'register' %}" autocomplete="off">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                            <input type="text" class="form-control" id="username" name="profile_name" value="{{ register_form.profile_name.value|default_if_none:'' }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ register_form.email.value|default_if_none:'' }}" required>
                         </div>
                         <div class="mb-3">
                             <label for="password1" class="form-label">Password</label>
@@ -161,7 +171,17 @@
                             <label for="password2" class="form-label">Confirm Password</label>
                             <input type="password" class="form-control" id="password2" name="password2" required>
                         </div>
-                        <button type="submit" class="btn btn-outline-light mt-3">Register</button>
+                        <div class="mb-3 d-flex justify-content-between w-100 align-items-center">
+                            <!-- Left side -->
+                            <div>
+                                <button type="submit" class="btn btn-outline-light mt-1 me-2">Register</button>
+                            </div>
+                            <!-- Right side -->
+                            <div class="d-flex align-items-center">
+                                <p class="mb-0 me-2 text-white">Already have an account?</p>
+                                <button class="btn btn-outline-light mt-1" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                            </div>
+                        </div>                        
                     </form>
                 </div>
             </div>
@@ -296,7 +316,60 @@
                 .catch(err => console.error("Failed to load:", err));
             }
         });
+        document.addEventListener('DOMContentLoaded', function () {
+            const closeBtn = document.getElementById("registerModalCloseBtn");
+            if (closeBtn) {
+                closeBtn.addEventListener("click", function () {
+                    window.history.pushState({}, "", "/");
+                });
+            }
+
+            const modalEl = document.getElementById('registerModal');
+            if (modalEl) {
+                modalEl.addEventListener('hidden.bs.modal', function () {
+                    window.history.pushState({}, "", "/");
+                });
+            }
+            const toasts = document.querySelectorAll('.my-toast');
+        
+            toasts.forEach((toastEl) => {
+                const timerBar = toastEl.querySelector('.timer-bar');
+                let width = 100;
+                let interval = null;
+                const toast = new bootstrap.Toast(toastEl);
+        
+                function shrinkBar() {
+                    interval = setInterval(() => {
+                        if (width <= 0) {
+                            clearInterval(interval);
+                            toast.hide();
+                        } else {
+                            width -= 1;
+                            timerBar.style.width = width + '%';
+                        }
+                    }, 40);
+                }
+        
+                function pauseBar() {
+                    clearInterval(interval);
+                }
+        
+                toastEl.addEventListener('mouseenter', pauseBar);
+                toastEl.addEventListener('mouseleave', shrinkBar);
+        
+                toast.show();
+                shrinkBar();
+            });
+        });
     </script>
+    {% if request.session.show_register_modal %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var myModal = new bootstrap.Modal(document.getElementById('registerModal'));
+            myModal.show();
+        });
+    </script>
+    {% endif %}
 
 </body>
 </html>
