@@ -49,22 +49,28 @@ def singer_details(request, slug):
     singer = Singer.objects.get(slug=slug)
     songs = Track.objects.filter(artist=singer)
     albums = songs.values_list('album', flat=True).distinct()
-    return render(request, 'singer_albums.html', {
+    context = {
         'singer': singer,
         'songs': songs,
         'albums': albums
-    })
+    }
+    if request.headers.get('Hx-Request') == 'true':
+        return render(request, 'singer_albums.html', context)
+    return render(request, 'base.html', {**context, 'partial': 'singer_albums.html'})
     
     
 def music_director_details(request, slug):
     artist = MusicDirector.objects.get(slug=slug)
     albums = Album.objects.filter(artist=artist)
     songs = Track.objects.filter(album__in=albums)
-    return render(request, 'artist_albums.html', {
+    context = {
         'artist': artist,
         'albums': albums,
         'songs': songs
-    })
+    }
+    if request.headers.get('Hx-Request') == 'true':
+        return render(request, 'artist_albums.html', context)
+    return render(request, 'base.html', {**context, 'partial': 'artist_albums.html'})
     
 
 @csrf_exempt    

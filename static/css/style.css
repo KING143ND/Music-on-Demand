@@ -298,7 +298,7 @@ input[type=range]::-moz-range-thumb {
 .timer-bar {
 	height: 100%;
 	width: 100%;
-	background-color: white;
+	background-color: rgb(0, 0, 0);
 	transition: width 0.04s linear;
 }
 
