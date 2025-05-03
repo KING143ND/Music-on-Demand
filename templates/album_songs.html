@@ -6,8 +6,10 @@
     <section class="flex justify-center items-center pt-8">
         <div class="max-w-4xl w-full bg-gray-900 px-12 py-8 rounded-lg shadow-xl">
             <div class="flex items-center space-x-6">
-                <img id="album-image" src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-48 object-cover rounded-md">
-                <div class="text-white">
+                <div class="col-md-3">
+                    <img id="album-image" src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-48 object-cover rounded-md">
+                </div>
+                <div class="col-md-9 text-white">
                     <h2 id="album-title" class="text-3xl font-bold">{{ album.title }}</h2>
                     <p id="release-year" class="mt-2 text-lg"><span class="mt-1 text-sm text-gray-400">Released Year: </span> {{ album.release_year }}</p>
                     <div class="mt-1">
@@ -33,8 +35,7 @@
         <ul id="song-list" class="mt-2">
             {% for song in songs %}
                 <li class="song-item flex justify-between items-center py-3 hover:bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded ps-4">
-                    <span class="col-5 cursor-pointer" onclick="setFooterPlayer({{ song.id }}, '{{ song.title }}', '{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}')">{{ forloop.counter }}. {{ song.title }}</span>
-                    <audio id="audio-{{ song.id }}" src="{{ song.audio_file.url }}" preload="auto"></audio>
+                    <span class="col-5 cursor-pointer" onclick="setFooterPlayer('{{ song.id }}', '{{ song.title }}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}', `{% for artist in song.artist.all %}{{ artist.name }}{% if not forloop.last %}, {% endif %}{% endfor %}`, 0, true)">{{ forloop.counter }}. {{ song.title }}</span>
                     <p class="col-5">Artist: <span class="text-sm text-gray-300">{% for artist in song.artist.all %}{{artist.name}}{% if not forloop.last %},{% endif %}{% endfor %}</span></p>
                     <p class="text-sm col-1">{{ song.duration }}</p>
                     <button class="text-xl col-1 favorite-btn" onclick="toggleFavorite({{ song.id }})" id="favorite-btn-{{ song.id }}">
@@ -45,89 +46,4 @@
         </ul>
     </section>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        fetchAlbumDetails();
-    });
-
-    function fetchAlbumDetails() {
-        const slug = window.location.pathname.split('/').pop();
-        
-        fetch(`/album/${slug}/`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.album) {
-                // Populate the album details
-                document.getElementById('album-title').textContent = data.album.title;
-                document.getElementById('album-image').src = data.album.image;
-                document.getElementById('release-year').textContent = `Released Year: ${data.album.release_year}`;
-                document.getElementById('singers').textContent = data.album.singers.join(', ');
-                document.getElementById('total-songs').textContent = data.album.total_songs;
-
-                // Add songs dynamically
-                const songList = document.getElementById('song-list');
-                songList.innerHTML = '';  // Clear existing songs
-                data.songs.forEach(song => {
-                    const songItem = document.createElement('li');
-                    songItem.classList.add('song-item');
-                    songItem.innerHTML = `
-                        <span onclick="setFooterPlayer(${song.id}, '${song.title}', '${song.artists.join(', ')}', '${song.album_title}', '${song.album_image}', '${song.audio_file}')">${song.title}</span>
-                        <audio id="audio-${song.id}" src="${song.audio_file}" preload="auto"></audio>
-                        <p>Artist: ${song.artists.join(', ')}</p>
-                        <p>${song.duration}</p>
-                    `;
-                    songList.appendChild(songItem);
-                });
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-
-    function toggleFavorite(trackId) {
-        fetch(`/toggle-favorite/${trackId}/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.error) {
-                alert("Error: " + data.error);
-            } else {
-                const icon = document.getElementById(`favorite-icon-${data.track_id}`);
-                if (data.is_favorite) {
-                    icon.classList.remove('fa-regular');
-                    icon.classList.add('fa-solid', 'text-red-500');
-                } else {
-                    icon.classList.remove('fa-solid', 'text-red-500');
-                    icon.classList.add('fa-regular');
-                }
-            }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-    
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.startsWith(name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-</script>
 {% endblock %}

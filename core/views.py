@@ -47,9 +47,7 @@ def album_details(request, slug):
     
 def singer_details(request, slug):
     singer = Singer.objects.get(slug=slug)
-    print(singer)
     songs = Track.objects.filter(artist=singer)
-    print(songs)
     albums = songs.values_list('album', flat=True).distinct()
     return render(request, 'singer_albums.html', {
         'singer': singer,
@@ -74,8 +72,6 @@ def toggle_favorite(request, track_id):
     if request.user.is_authenticated:
         profile = Profile.objects.get(user=request.user)
         track = get_object_or_404(Track, id=track_id)
-        print(profile)
-        print(track)
         if track in profile.favorites.all():
             profile.favorites.remove(track)
             is_favorite = False
