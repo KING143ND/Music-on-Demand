@@ -21,7 +21,7 @@ function initializeWaveSurfer(url, savedTime = 0, autoPlay = false) {
         const savedVolume = parseFloat(localStorage.getItem('playerVolume')) || 0.5;
         waveSurfer.setVolume(savedVolume);
         document.getElementById('volume').value = savedVolume * 100;
-        document.getElementById('volume').style.background = `linear-gradient(to right, violet 0%, violet ${savedVolume * 100}%, #ccc ${savedVolume * 100}%, #ccc 100%)`;
+        document.getElementById('volume').style.background = `linear-gradient(to right, #a855f7 0%, #a855f7 ${savedVolume * 100}%, #f487bd ${savedVolume * 100}%, #f487bd 100%)`;
         if (savedTime) waveSurfer.seekTo(savedTime / waveSurfer.getDuration());
 
         if (autoPlay) {
@@ -61,6 +61,7 @@ function setFooterPlayer(songId, songTitle, albumTitle, albumArt, audioFileUrl, 
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            document.getElementById('footer-player').classList.remove('hidden');
             document.getElementById('player-title').innerText = data.song_title || 'No Track Playing';
             document.getElementById('player-artist').innerText = data.artist || 'Artist Name(s)';
             document.getElementById('player-album').innerText = data.album_title || 'Album Name';
@@ -101,16 +102,20 @@ function togglePlay() {
     }
 }
 
+function updateSeekbarBackground(value) {
+    const seekbar = document.getElementById('seekbar');
+    seekbar.style.background = `linear-gradient(to right, #a855f7 ${value}%, #f487bd ${value}%)`;
+}
+
 function updateSeekBar() {
     if (waveSurfer) {
         const currentTime = waveSurfer.getCurrentTime();
         const duration = waveSurfer.getDuration();
-        const seekbar = document.getElementById('seekbar');
+        const percent = (currentTime / duration) * 100;
         document.getElementById('current-time').innerText = formatTime(currentTime);
         document.getElementById('total-time').innerText = formatTime(duration);
-        const percent = (currentTime / duration) * 100;
-        seekbar.value = percent;
-        seekbar.style.background = `linear-gradient(to right, #1db954 ${percent}%, #0b652b ${percent}%)`;
+        document.getElementById('seekbar').value = percent;
+        updateSeekbarBackground(percent);
         const state = JSON.parse(localStorage.getItem('playerState'));
         if (state) {
             state.currentTime = currentTime;
@@ -122,8 +127,7 @@ function updateSeekBar() {
 function seekTrack(value) {
     if (waveSurfer) {
         waveSurfer.seekTo(value / 100);
-        const seekbar = document.getElementById('seekbar');
-        seekbar.style.background = `linear-gradient(to right, #1db954${value}%, #0b652b ${value}%)`;
+        updateSeekbarBackground(value);
     }
 }
 
@@ -132,7 +136,7 @@ function setVolume(value) {
         const volume = value / 100;
         waveSurfer.setVolume(volume);
         localStorage.setItem('playerVolume', volume);
-        document.getElementById('volume').style.background = `linear-gradient(to right, violet 0%, violet ${value}%, #ccc ${value}%, #ccc 100%)`;
+        document.getElementById('volume').style.background = `linear-gradient(to right, #a855f7 0%, #a855f7 ${value}%, #f487bd ${value}%, #f487bd 100%)`;
         const muteIcon = document.querySelector('#mute-btn i');
         if (volume > 0) {
             isMuted = false;
@@ -152,13 +156,13 @@ function toggleMute() {
         lastVolume = parseFloat(localStorage.getItem('playerVolume')) || 0.5;
         waveSurfer.setVolume(0);
         volumeSlider.value = 0;
-        volumeSlider.style.background = `linear-gradient(to right, violet 0%, violet 0%, #ccc 0%, #ccc 100%)`;
+        volumeSlider.style.background = `linear-gradient(to right, #a855f7 0%, #a855f7 0%, #f487bd 0%, #f487bd 100%)`;
         muteIcon.classList.replace('fa-volume-high', 'fa-volume-xmark');
         isMuted = true;
     } else {
         waveSurfer.setVolume(lastVolume);
         volumeSlider.value = lastVolume * 100;
-        volumeSlider.style.background = `linear-gradient(to right, violet 0%, violet ${lastVolume * 100}%, #ccc ${lastVolume * 100}%, #ccc 100%)`;
+        volumeSlider.style.background = `linear-gradient(to right, #a855f7 0%, #a855f7 ${lastVolume * 100}%, #f487bd ${lastVolume * 100}%, #f487bd 100%)`;
         localStorage.setItem('playerVolume', lastVolume);
         muteIcon.classList.replace('fa-volume-xmark', 'fa-volume-high');
         isMuted = false;

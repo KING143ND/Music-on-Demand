@@ -1,21 +1,21 @@
 <title hx-head="title">Music On Demand</title>
 
 {% block content %}
-<div class="mx-4 text-white pt-4" id="index">
+<div class="mx-2 text-white pt-4" id="index">
     <!-- Albums Section -->
     <section class="my-8">
         <h2 class="text-2xl font-bold mb-4 text-center">Albums</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-3 md:grid-cols-4 md:gap-5 lg:grid-cols-6 lg:gap-8">
             {% for album in albums %}
             <a href="{% url 'album_details' album.slug %}" hx-get="{% url 'album_details' album.slug %}" hx-target="#main-content" hx-push-url="true">
-            <div class="bg-gray-900 rounded overflow-hidden album-card">
-                <img src="{{ album.image.url }}" alt="{{ album.title }}" class="h-48 w-full object-cover rounded-md">
-                <div class="px-2 pt-2 pb-4">
-                    <h3 class="font-bold text-lg">{{ album.title }}</h3>
-                    <span class="text-gray-300">
+            <div class="bg-gray-900 rounded overflow-hidden card">
+                <img src="{{ album.image.url }}" alt="{{ album.title }}" class="card-img-top rounded-md">
+                <div class="card-body px-2 pt-2 pb-4">
+                    <h4 class="card-title mb-1 text-lg">{{ album.title }}</h4>
+                    <span class="card-text text-gray-300 text-sm">
                     <b class="text-gray-400 text-sm">{{ album.release_year }} • </b>
                         {% for artist in album.artist.all %}
-                            {{artist.name|truncatechars:16}}{% if not forloop.last %},{% endif %}
+                            {{artist.name|truncatechars:14}}{% if not forloop.last %},{% endif %}
                         {% endfor %}
                     </span>
                 </div>
@@ -27,13 +27,13 @@
     <!-- Songs Section -->
     <section class="my-8 pt-4">
         <h2 class="text-2xl font-bold mb-4 text-center">Songs</h2>
-        <div class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
             {% for song in songs %}
             <div class="mb-4 cursor-pointer song-card" onclick="setFooterPlayer('{{ song.id }}', '{{ song.title }}', '{{ song.album.title }}', '{{ song.album.image.url }}', '{{ song.audio_file.url }}', `{% for artist in song.artist.all %}{{ artist.name }}{% if not forloop.last %}, {% endif %}{% endfor %}`, 0, true)">
                 <div class="card bg-gray-900 rounded-md">
                     <img src="{{ song.album.image.url }}" class="card-img-top rounded-md" alt="{{ song.title }}">
                     <div class="card-body bg-gray-900 rounded-md">
-                        <h5 class="card-title text-lg">{{ song.title|truncatechars:18 }}</h5>
+                        <h5 class="card-title mb-1 text-lg">{{ song.title|truncatechars:18 }}</h5>
                         <p class="card-text text-gray-300 mt-0">
                             {% for artist in song.artist.all %}
                                 {{artist.name|truncatechars:24}}{% if not forloop.last %},{% endif %}
@@ -53,7 +53,7 @@
             <a href="{% url 'singer_details' singer.slug %}" hx-get="{% url 'singer_details' singer.slug %}" hx-target="#main-content" hx-push-url="true">
             <div class="text-center">
                 <img src="{{ singer.image.url }}" alt="{{ singer.name }}" class="h-32 w-32 rounded-full mx-auto mb-1 object-cover">
-                <h3 class="font-bold text-lg text-gray-300">{{ singer.name }}</h3>
+                <h5 class="text-lg card-body">{{ singer.name }}</h5>
             </div>
             </a>
             {% endfor %}
@@ -67,7 +67,7 @@
             <a href="{% url 'music_director_details' artist.slug %}" hx-get="{% url 'music_director_details' artist.slug %}" hx-target="#main-content" hx-push-url="true">
             <div class="text-center">
                 <img src="{{ artist.image.url }}" alt="{{ artist.name }}" class="h-32 w-32 rounded-full mx-auto mb-1 object-cover">
-                <h3 class="font-bold text-lg text-gray-300">{{ artist.name }}</h3>
+                <h5 class="text-lg">{{ artist.name }}</h5>
             </div>
             </a>
             {% endfor %}

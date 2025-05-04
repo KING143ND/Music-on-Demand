@@ -1,8 +1,87 @@
-@import url("https://fonts.googleapis.com/css2?family=Oswald&display=swap");
 body {
-	font-family: "Oswald", sans-serif !important;
+	font-family: "Oswald", "Arial", sans-serif !important;
 	margin: 0;
 	padding-bottom: 100px;
+}
+
+/* Base (Mobile First) */
+html {
+	font-size: 14px !important;
+}
+
+h1 { font-size: 1.5rem !important; }
+h2 { font-size: 1.3rem !important; }
+h3 { font-size: 1.2rem !important; }
+h4 { font-size: 1.1rem !important; }
+h5 { font-size: 1rem !important; }
+h6 { font-size: 0.95rem !important; }
+
+p, span, label, button {
+	font-size: 0.9rem !important;
+}
+
+/* Small Devices (≥640px) */
+@media (min-width: 640px) {
+	html { font-size: 15px !important; }
+
+	h1 { font-size: 1.6rem !important; }
+	h2 { font-size: 1.4rem !important; }
+	h3 { font-size: 1.3rem !important; }
+	h4 { font-size: 1.2rem !important; }
+	h5 { font-size: 1.1rem !important; }
+	h6 { font-size: 1rem !important; }
+
+	p, label, button {
+		font-size: 1rem !important;
+	}
+}
+
+/* Medium Devices (≥768px) */
+@media (min-width: 768px) {
+	html { font-size: 15.5px !important; }
+
+	h1 { font-size: 1.75rem !important; }
+	h2 { font-size: 1.5rem !important; }
+	h3 { font-size: 1.35rem !important; }
+	h4 { font-size: 1.25rem !important; }
+	h5 { font-size: 1.15rem !important; }
+	h6 { font-size: 1.05rem !important; }
+
+	p, label, button {
+		font-size: 1.05rem !important;
+	}
+}
+
+/* Large Devices (≥1024px) */
+@media (min-width: 1024px) {
+	html { font-size: 16px !important; }
+
+	h1 { font-size: 1.9rem !important; }
+	h2 { font-size: 1.6rem !important; }
+	h3 { font-size: 1.45rem !important; }
+	h4 { font-size: 1.3rem !important; }
+	h5 { font-size: 1.2rem !important; }
+	h6 { font-size: 1.1rem !important; }
+
+	p, label, button {
+		font-size: 1.1rem !important;
+	}
+}
+
+/* Extra Large Devices (≥1280px) */
+@media (min-width: 1280px) {
+	html { font-size: 16.5px !important; }
+
+	h1 { font-size: 2.1rem !important; }
+	h2 { font-size: 1.8rem !important; }
+	h3 { font-size: 1.6rem !important; }
+	h4 { font-size: 1.4rem !important; }
+	h5 { font-size: 1.3rem !important; }
+	h6 { font-size: 1.2rem !important; }
+
+	p, label, button {
+		font-size: 1.15rem !important;
+	}
 }
 
 .track-list {
@@ -115,7 +194,7 @@ body {
 }
 
 #seekbar::-webkit-slider-thumb {
-	background: #1db954;
+	background: #6366f1;
 	border-radius: 50%;
 	border: none;
 	width: 15px;
@@ -126,7 +205,7 @@ body {
 }
 
 #seekbar::-moz-range-thumb {
-	background: #1db954;
+	background: #6366f1;
 	border-radius: 50%;
 	border: none;
 	width: 15px;
@@ -217,12 +296,12 @@ body {
 	border: none;
 	cursor: pointer;
 	font-size: 16px;
-	color: #6b21a8;
+	color: #6366f1;
 	transition: color 0.3s ease, transform 0.2s ease;
 }
 
 #mute-btn:hover {
-	color: #9333ea;
+	color: #5ca5ff;
 	transform: scale(1.1);
 }
 
@@ -249,50 +328,50 @@ body {
 	width: 14px;
 	height: 14px;
 	border-radius: 50%;
-	background: #9333ea;
+	background: #6366f1;
 	cursor: pointer;
 	border: none;
 	transition: background 0.3s ease;
 }
 
 #volume::-webkit-slider-thumb:hover {
-	background: #7e22ce;
+	background: #6366f1;
 }
 
 #volume::-moz-range-thumb {
 	width: 14px;
 	height: 14px;
 	border-radius: 50%;
-	background: #9333ea;
+	background: #6366f1;
 	border: none;
 	cursor: pointer;
 }
 
-input[type=range] {
-    -webkit-appearance: none;
-    height: 4px;
-    background: #444;
-    border-radius: 2px;
-    outline: none;
-    transition: background 0.2s ease;
+input[type="range"] {
+	-webkit-appearance: none;
+	height: 4px;
+	background: #444;
+	border-radius: 2px;
+	outline: none;
+	transition: background 0.2s ease;
 }
 
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 14px;
-    width: 14px;
-    border-radius: 50%;
-    background: #3b82f6;
-    cursor: pointer;
-    transition: background 0.3s ease;
+input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	height: 14px;
+	width: 14px;
+	border-radius: 50%;
+	background: #3b82f6;
+	cursor: pointer;
+	transition: background 0.3s ease;
 }
 
-input[type=range]::-moz-range-thumb {
-    height: 14px;
-    width: 14px;
-    border-radius: 50%;
-    background: #3b82f6;
-    cursor: pointer;
+input[type="range"]::-moz-range-thumb {
+	height: 14px;
+	width: 14px;
+	border-radius: 50%;
+	background: #3b82f6;
+	cursor: pointer;
 }
 
 .timer-bar {
@@ -304,7 +383,12 @@ input[type=range]::-moz-range-thumb {
 
 .toast-timer {
 	height: 2px;
-	background-color: rgba(255,255,255,0.2);
+	background-color: rgba(255, 255, 255, 0.2);
 	position: relative;
 	overflow: hidden;
+}
+
+.block:hover {
+	cursor: pointer;
+	background-color: #3f3e3e;
 }
